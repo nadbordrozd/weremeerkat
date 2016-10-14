@@ -1,7 +1,19 @@
-click_prediction
-==============================
+top secret
+==========
 
-ldsafgjhsdfg
+Create `.env` file in the project root folder. It needs to look like this:
+
+```text
+KAGGLE_USER='my kaggle login'
+KAGGLE_PASSWORD='my kaggle password'
+```
+
+then run 
+```bash
+src/data/download_data.sh
+```
+
+To get the good stuff.
 
 Project Organization
 ------------
