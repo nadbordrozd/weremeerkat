@@ -31,7 +31,7 @@ def sort_ads(df, predictions):
 
         current_group.append((-pred, ad_id))
     ads.append([ad_id for _, ad_id in sorted(current_group)])
-    return pd.DataFrame({'display_id':disps, 'ad_id': ads}).sort_values('display_id')
+    return pd.DataFrame({'display_id': disps, 'ad_id': ads}).sort_values('display_id')
 
 
 def make_submission(model, output_path):
