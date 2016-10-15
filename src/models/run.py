@@ -1,7 +1,11 @@
 from benchmarks import benchmark
-from models import VeryNaiveBayes
+from models import VeryNaiveBayes, HomeMadeNaiveBayes
 
-benchmark(VeryNaiveBayes(10))
-benchmark(VeryNaiveBayes(20))
-benchmark(VeryNaiveBayes(40))
-benchmark(VeryNaiveBayes(80))
+
+benchmark(HomeMadeNaiveBayes(regularization=5))
+benchmark(HomeMadeNaiveBayes(regularization=10))
+benchmark(HomeMadeNaiveBayes(regularization=20))
+benchmark(VeryNaiveBayes(alpha=0.5))
+benchmark(VeryNaiveBayes(alpha=1))
+benchmark(VeryNaiveBayes(alpha=2))
+benchmark(VeryNaiveBayes(alpha=4))
