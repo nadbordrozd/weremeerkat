@@ -7,7 +7,7 @@ cd ../../
 source .env
 cd data/raw
 
-kg --download --verbose -u $KAGGLE_USER -p $KAGGLE_PASSWORD -c outbrain-click-prediction
+kg download --verbose -u $KAGGLE_USER -p $KAGGLE_PASSWORD -c outbrain-click-prediction
 
 for f in *.zip
 do
