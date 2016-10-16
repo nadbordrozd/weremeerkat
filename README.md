@@ -19,6 +19,14 @@ To get the good stuff. Code for testing the models and making submissions lives 
 python src/models/run.py
 ```
 
+To put the csv filer in a sqlite database run:
+
+```bash
+src/data/create_database.sh
+```
+
+This will create `data/interim/database.db` and import `documents_meta.csv` as a table there. TODO: import the rest of the tables. 
+
 Project Organization
 ------------
 
