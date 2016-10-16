@@ -1,16 +1,18 @@
 import os
+from subprocess import call
 import pandas as pd
 from itertools import izip
 import numpy as np
 from ml_metrics import mapk
 
-from utils import logger
+from utils import logger, project_dir
 
 this_dir = os.getcwd()
 
 train = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_train.csv"))
 test = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_test.csv"))
 sample_sub = pd.read_csv(os.path.join(this_dir, "../../data/raw/sample_submission.csv"))
+
 
 def sort_ads(df, predictions):
     """groups ad_ids per display_id, sorts them by predicted click probability.
@@ -55,15 +57,31 @@ def sort_ads(df, predictions):
     return pd.DataFrame({'display_id': disps, 'ad_id': ads})
 
 
-def make_submission(model, filename):
-    logger.info('making final prediction with model %s' % model)
+def get_submission_path(filename):
+    return os.path.join(project_dir, 'data/processed', filename)
+
+
+def make_submission(model, filename, actually_submit=False, message='"no message"'):
+    logger.info('training %s on full training set' % model)
+    model.fit(train, train.clicked)
+    logger.info('done training. making final predictions')
     predictions = model.predict(test)
     logger.info('done predicting, now sorting ads')
     df = sort_ads(test, predictions)
     df['ad_id'] = df.ad_id.map(lambda x: ' '.join(map(str, x)))
-    output_path = os.path.join(this_dir, '../../data/processed', filename)
+    output_path = get_submission_path(filename)
+
     logger.info('done sorting now saving result to %s' % output_path)
-    df.to_csv(output_path)
+    df.get(['display_id', 'ad_id']).to_csv(output_path, index=False)
+    if actually_submit:
+        submit_submission(filename, message)
+
+
+def submit_submission(filename, message='"no message"'):
+    path = get_submission_path(filename)
+    logger.info('attempting to submit %s' % path)
+    call('kg submit %s --verbose -u $KAGGLE_USER -p $KAGGLE_PASSWORD '
+         '-c outbrain-click-prediction -m %s' % (path, message), shell=True)
 
 
 def benchmark(model):

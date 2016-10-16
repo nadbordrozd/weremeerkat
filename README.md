@@ -13,7 +13,11 @@ then run
 src/data/download_data.sh
 ```
 
-To get the good stuff.
+To get the good stuff. Code for testing the models and making submissions lives in src/models/models and src/models/benchmarks at the moment. The idea is to define all the reusable components there and to do one-off experiments using those components in src/models/run.py.
+
+```bash
+python src/models/run.py
+```
 
 Project Organization
 ------------
