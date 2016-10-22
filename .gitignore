@@ -1,0 +1,6 @@
+*.csv
+*.zip
+*.db
+*.pyc
+*.env
+
