@@ -6,13 +6,7 @@ import numpy as np
 from ml_metrics import mapk
 
 from utils import logger, project_dir
-
-this_dir = os.getcwd()
-
-train = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_train.csv"))
-test = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_test.csv"))
-sample_sub = pd.read_csv(os.path.join(this_dir, "../../data/raw/sample_submission.csv"))
-
+from feature_engineering import get_total, get_train_test
 
 def sort_ads(df, predictions):
     """groups ad_ids per display_id, sorts them by predicted click probability.
@@ -62,6 +56,7 @@ def get_submission_path(filename):
 
 
 def make_submission(model, filename, actually_submit=False, message='"no message"'):
+    train, test = get_train_test(get_total())
     logger.info('training %s on full training set' % model)
     model.fit(train, train.clicked)
     logger.info('done training. making final predictions')
@@ -85,6 +80,7 @@ def submit_submission(filename, message='"no message"'):
 
 
 def benchmark(model):
+    train, test = get_train_test(get_total())
     np.random.seed(0)
     logger.info('making train-test split')
     ids = train.display_id.unique()
