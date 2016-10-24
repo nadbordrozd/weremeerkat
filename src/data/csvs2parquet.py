@@ -20,14 +20,15 @@ sqlContext = SQLContext(sc)
 
 def parse_value(s):
     ':see_no_evil:'
-    try:
-        result = int(s)
-    except ValueError:
-        try:
-            result = float(s)
-        except ValueError:
-            result = s
-    return result
+    return s
+    # try:
+    #     result = int(s)
+    # except ValueError:
+    #     try:
+    #         result = float(s)
+    #     except ValueError:
+    #         result = s
+    # return result
 
 tables = [
     'documents_meta',
