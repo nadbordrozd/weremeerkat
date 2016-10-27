@@ -29,8 +29,7 @@ This will create `data/interim/database.db` and import all the tables into it.
 To instead save everything as spark friendly parquet files do:
 
 ```bash
-cd src/data
-spark-submit --master 'local[4]' --driver-memory 5g csvs2parquet.py
+spark-submit src/data/csvs2parquet.py
 ```
 
 You must have spark installed and available on path. 

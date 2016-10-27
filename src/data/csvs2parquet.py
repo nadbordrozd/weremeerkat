@@ -1,34 +1,21 @@
 """read all the csvs from data/raw, parse then and save as
 parquet in data/interim
-
-this is horrific and hacky. it relies on there being no
-NULLS in the data and no only datatypys - ints, floats, strings
-also there can't be any commas in string fields.
-Should move to a proper csv reader if this breaks
 """
-from spark_utils import df_from_rdd
+import os
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
 
+from spark_utils import df_from_csv
 conf = (SparkConf()
-         .setMaster("local[4]")
-         .setAppName("meerkat junior")
-         .set("spark.driver.memory", "5g"))
+        .setMaster("local[4]")
+        .setAppName("meerkat junior")
+        .set("spark.driver.memory", "5g"))
 
 sc = SparkContext(conf = conf)
 sqlContext = SQLContext(sc)
 
-def parse_value(s):
-    ':see_no_evil:'
-    return s
-    # try:
-    #     result = int(s)
-    # except ValueError:
-    #     try:
-    #         result = float(s)
-    #     except ValueError:
-    #         result = s
-    # return result
+project_dir = os.path.realpath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 tables = [
     'documents_meta',
@@ -43,19 +30,8 @@ tables = [
     'page_views']
 
 for table_name in tables:
-    input_path = '../../data/raw/%s.csv' % table_name
-    rdd = sc.textFile(input_path)
-    header = rdd.first()
+    input_path = os.path.join(project_dir, 'data/raw/%s.csv' % table_name)
+    df = df_from_csv(input_path, sc, sqlContext)
 
-    without_header = rdd.filter(lambda x: x != header)
-    parsed = without_header.map(
-        lambda line: {
-            key: parse_value(val)
-            for key, val in zip(header.split(','), line.split(','))
-        })
-
-    prototype = parsed.first()
-    df = df_from_rdd(parsed, prototype, sqlContext)
-
-    output_path = '../../data/interim/%s.parquet' % table_name
+    output_path = os.path.join(project_dir, 'data/interim/%s.parquet' % table_name)
     df.write.save(output_path)

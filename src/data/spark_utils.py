@@ -58,3 +58,37 @@ def df_from_rdd(rdd, prototype, sql):
     schema = infer_schema(prototype)
     row_rdd = rdd.map(lambda x: _rowify(x, prototype))
     return sql.createDataFrame(row_rdd, schema)
+
+
+def parse_value(s):
+    if s == '':
+        return None
+    try:
+        result = int(s)
+    except ValueError:
+        try:
+            result = float(s)
+        except ValueError:
+            result = s
+    return result
+
+
+def df_from_csv(input_path, sc, sqlContext):
+    """this is incredibly hacky and I apologise for it
+    reads a csv from given path and returns dafaframe.
+    assumes that fields are str, int or float.
+    assumes that field types can be inferred from first record
+    (first record contains no empty fields)"""
+    rdd = sc.textFile(input_path)
+    header = rdd.first()
+
+    without_header = rdd.filter(lambda x: x != header)
+    parsed = without_header.map(
+        lambda line: {
+            key: parse_value(val)
+            for key, val in zip(header.split(','), line.split(','))
+        })
+
+    prototype = parsed.first()
+    df = df_from_rdd(parsed, prototype, sqlContext)
+    return df
