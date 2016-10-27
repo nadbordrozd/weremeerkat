@@ -3,4 +3,6 @@
 *.db
 *.pyc
 *.env
-
+*.parquet
+.env/
+./.idea/
