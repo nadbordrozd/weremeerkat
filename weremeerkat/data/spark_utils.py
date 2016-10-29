@@ -87,6 +87,16 @@ def df_from_csv(input_path, sc, sqlContext):
         key: parse_value(val)
         for key, val in zip(header.split(','), without_header.first().split(','))
     }
+    def parse_attempt(line):
+        try:
+            x = {
+            key: type(prototype[key])(val)
+            for key, val in zip(header.split(','), line.split(','))}
+            return False
+        except:
+            return True
+
+    bad_ones = without_header.filter(parse_attempt)
 
     parsed = without_header.map(
         lambda line: {

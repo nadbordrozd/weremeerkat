@@ -10,6 +10,15 @@ SAMPLE_SUB_PATH = os.path.join(this_dir, "../../data/raw/sample_submission.csv")
 EVENTS_PATH = os.path.join(this_dir, "../../data/raw/events.csv")
 
 @cache
+def get_train_set():
+    return pd.read_csv(TRAIN_PATH)
+
+
+@cache
+def get_test_set():
+    return pd.read_csv(TEST_PATH)
+
+
 def get_total():
     """returns train+test sets combined and joined with events table"""
     train = pd.read_csv(TRAIN_PATH)

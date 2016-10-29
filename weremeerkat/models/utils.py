@@ -23,5 +23,3 @@ logging.basicConfig(level=logging.INFO, format=log_fmt)
 
 logger = logging.getLogger(__name__)
 logger.info('================START=================')
-
-
