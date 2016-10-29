@@ -1,7 +1,8 @@
 import os
+
 import pandas as pd
 
-from utils import cache
+from weremeerkat.utils import cache
 
 this_dir = os.getcwd()
 TRAIN_PATH = os.path.join(this_dir, "../../data/raw/clicks_train.csv")

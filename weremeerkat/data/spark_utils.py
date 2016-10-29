@@ -16,7 +16,16 @@ def infer_schema(rec):
                 raise ValueError("can't infer type of a list with inconsistent elem types")
         return pst.ArrayType(elem_type)
     else:
-        return pst._infer_type(rec)
+        type_map = {
+            int: pst.IntegerType(),
+            long: pst.LongType(),
+            str: pst.StringType(),
+            bool: pst.BooleanType(),
+            float: pst.FloatType()
+        }
+        if type(rec) not in type_map:
+            raise ValueError("can't find equivalent spark type for %s" % type(rec))
+        return type_map[type(rec)]
 
 
 def _rowify(x, prototype):
@@ -107,3 +116,53 @@ def df_from_csv(input_path, sc, sqlContext):
     prototype = parsed.first()
     df = df_from_rdd(parsed, prototype, sqlContext)
     return df
+
+
+def joint_index(a, b, spark):
+    """takes two rdds of values
+    a = ['w', 'x', 'y']
+    b = ['y', 'z']
+    and returns an index - an rdd mapping values to integer indices
+    result = [('w', 0), ('x', 1), ('y', 2), ('z', 3)]
+    IMPORTANT: Makes sure that all the N distinct values from the first rdd map to indices 1..N
+    I need it to be this way because later we will be doing 1-hot encoding of the
+    values in the first rdd
+
+    :param a: rdd of strings
+    :param b: rdd of strings
+    :param b: pyspark.sql.session.SparkSession
+    :return: rdd of pairs (value, integer index)
+    """
+    a = a.distinct().cache()
+    b = b.distinct().cache()
+    b_minus_a = b\
+        .keyBy(lambda x: x) \
+        .leftOuterJoin(a.keyBy(lambda x: x)) \
+        .filter(lambda (key, (b_, a_)): a_ is None)\
+        .keys()
+    count = a.count()
+    a_index = a.zipWithIndex()
+    b_minus_a_index = b_minus_a.zipWithIndex().map(lambda (v, i): (v, i + count))
+    result = a_index.union(b_minus_a_index).map(lambda (v, i): pst.Row(value=v, index=i))
+    schema = pst.StructType([pst.StructField('value', pst.StringType()),
+                             pst.StructField('index', pst.IntegerType())])
+    result_df = spark.createDataFrame(result, schema=schema).cache()
+    a.unpersist()
+    b.unpersist()
+    return result_df
+
+def replace_column_with_index(df, index, column):
+    """joins given dataframe with index on a given column and replaces the column with
+    version from the index dataframe
+
+    :param df: dataframe
+    :param df: dataframe with 'value' and 'index' columns
+    :param column: name of the column to be replaced
+    :return: dataframe with column replaced
+    """
+    temp_name = 'temp_name'
+    df = df.withColumnRenamed(column, temp_name)
+    return df.join(index, df.temp_name == index.value) \
+        .drop('value') \
+        .drop(temp_name) \
+        .withColumnRenamed('index', column)

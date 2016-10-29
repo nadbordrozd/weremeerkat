@@ -1,12 +1,13 @@
 import os
-from subprocess import call
-import pandas as pd
 from itertools import izip
+from subprocess import call
+
 import numpy as np
+import pandas as pd
 from ml_metrics import mapk
 
-from utils import logger, project_dir
-from feature_engineering import get_train_set, get_test_set
+from weremeerkat.models.feature_engineering import get_train_set, get_test_set
+from weremeerkat.utils import logger, project_dir
 
 
 def sort_ads(df, predictions):
