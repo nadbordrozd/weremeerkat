@@ -35,3 +35,11 @@ for table_name in tables:
 
     output_path = os.path.join(project_dir, 'data/interim/%s.parquet' % table_name)
     df.write.save(output_path)
+
+
+def do_tab(table_name):
+    input_path = '../../data/raw/%s.csv' % table_name
+    df = df_from_csv(input_path, sc, sqlContext)
+
+    output_path = '../../data/interim/%s.parquet' % table_name
+    df.write.save(output_path)

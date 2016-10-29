@@ -83,9 +83,14 @@ def df_from_csv(input_path, sc, sqlContext):
     header = rdd.first()
 
     without_header = rdd.filter(lambda x: x != header)
+    prototype = {
+        key: parse_value(val)
+        for key, val in zip(header.split(','), without_header.first().split(','))
+    }
+
     parsed = without_header.map(
         lambda line: {
-            key: parse_value(val)
+            key: type(prototype[key])(val)
             for key, val in zip(header.split(','), line.split(','))
         })
 
