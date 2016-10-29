@@ -1,6 +1,6 @@
 top secret
 ==========
-
+###Setup
 Create `.env` file in the project root folder. It needs to look like this:
 
 ```text
@@ -8,29 +8,35 @@ KAGGLE_USER='my kaggle login'
 KAGGLE_PASSWORD='my kaggle password'
 ```
 
+Put this directory on your python path like this:
+```bash
+export PYTHONPATH="${PYTHONPATH}:PATH_TO_THIS_DIRECTORY"
+```
+
+Put it in your `bash_profile` (or equivalent) to make it permanent.
+
 then run 
 ```bash
-src/data/download_data.sh
+weremeerkat/data/download_data.sh
 ```
 
 To get the good stuff. Code for testing the models and making submissions lives in src/models/models and src/models/benchmarks at the moment. The idea is to define all the reusable components there and to do one-off experiments using those components in src/models/run.py.
 
 ```bash
-python src/models/run.py
+python weremeerkat/models/run.py
 ```
 
 To put the csv filer in a sqlite database run:
 
 ```bash
-src/data/create_database.sh
+weremeerkat/data/create_database.sh
 ```
 
 This will create `data/interim/database.db` and import all the tables into it.
 To instead save everything as spark friendly parquet files do:
 
 ```bash
-cd src/data
-spark-submit csvs2parquet.py
+spark-submit weremeerkat/data/make_parquet.py
 ```
 
 You must have spark installed and available on path. 
