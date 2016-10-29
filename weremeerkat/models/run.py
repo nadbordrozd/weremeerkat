@@ -3,5 +3,5 @@ from models import VeryNaiveBayes, HomeMadeNaiveBayes
 
 
 benchmark(HomeMadeNaiveBayes(regularization=5))
-make_submission(HomeMadeNaiveBayes(5), 'naive_bayes.csv')
+# make_submission(HomeMadeNaiveBayes(5), 'naive_bayes.csv')
 
