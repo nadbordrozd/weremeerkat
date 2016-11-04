@@ -2,13 +2,13 @@ import os
 
 import pandas as pd
 
-from weremeerkat.utils import cache
+from weremeerkat.utils import cache, project_dir
 
-this_dir = os.getcwd()
-TRAIN_PATH = os.path.join(this_dir, "../../data/raw/clicks_train.csv")
-TEST_PATH = os.path.join(this_dir, "../../data/raw/clicks_test.csv")
-SAMPLE_SUB_PATH = os.path.join(this_dir, "../../data/raw/sample_submission.csv")
-EVENTS_PATH = os.path.join(this_dir, "../../data/raw/events.csv")
+TRAIN_PATH = os.path.join(project_dir, "data/raw/clicks_train.csv")
+TEST_PATH = os.path.join(project_dir, "data/raw/clicks_test.csv")
+SAMPLE_SUB_PATH = os.path.join(project_dir, "data/raw/sample_submission.csv")
+EVENTS_PATH = os.path.join(project_dir, "data/raw/events.csv")
+
 
 @cache
 def get_train_set():
@@ -27,6 +27,7 @@ def get_total():
     total = train.append(test)
     events = pd.read_csv(EVENTS_PATH)
     return pd.merge(total, events, on='display_id')
+
 
 def get_train_test(tot_df):
     """splits combined train + test dataframe back into 2"""
