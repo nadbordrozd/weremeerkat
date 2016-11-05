@@ -1,5 +1,20 @@
+from pyspark import SparkConf, SparkContext
+from pyspark.sql import SQLContext, SparkSession, Row
 import pyspark.sql.types as pst
-from pyspark.sql import Row
+
+
+def get_spark_things(driver_memory='25g'):
+    conf = (SparkConf()
+            .setMaster("local[4]")
+            .setAppName("meerkat junior")
+            .set("spark.driver.memory", driver_memory))
+
+    sc = SparkContext(conf=conf)
+    spark = SparkSession(sc)
+    sqlContext = SQLContext(sc)
+
+    return sc, spark, sqlContext
+
 
 def infer_schema(rec):
     """infers dataframe schema for a record. Assumes every dict is a Struct, not a Map"""

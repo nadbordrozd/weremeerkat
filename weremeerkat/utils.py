@@ -4,7 +4,9 @@ from dotenv import find_dotenv, load_dotenv
 from joblib import Memory
 
 load_dotenv(find_dotenv())
-project_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+project_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir))
+raw_data_dir = os.path.join(project_dir, 'data/raw/')
+interim_data_dir = os.path.join(project_dir, 'data/interim/')
 
 #MEMOIZATION
 CACHE_DIR = os.path.join(project_dir, 'data/interim/cache')

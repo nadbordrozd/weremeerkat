@@ -1,21 +1,10 @@
 import os
-from pyspark import SparkConf, SparkContext
-from pyspark.sql import SQLContext, SparkSession
 
-from weremeerkat.data.spark_utils import joint_index, replace_column_with_index
-from weremeerkat.utils import logger
+from weremeerkat.spark_utils import joint_index, replace_column_with_index
+from weremeerkat.utils import logger, project_dir
+from weremeerkat.spark_utils import get_spark_things
 
-conf = (SparkConf()
-        .setMaster("local[4]")
-        .setAppName("meerkat junior")
-        .set("spark.driver.memory", "5g"))
-
-sc = SparkContext(conf=conf)
-spark = SparkSession(sc)
-sqlContext = SQLContext(sc)
-
-project_dir = os.path.realpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+sc, spark, sqlContext = get_spark_things()
 
 logger.info('loading page_views')
 page_views = spark.read.parquet(os.path.join(project_dir, 'data/interim/page_views.parquet'))
@@ -32,7 +21,7 @@ users_index = joint_index(events_users, pv_users, spark)
 logger.info('crating geo location index')
 pv_geo = page_views.rdd.map(lambda x: x.geo_location)
 events_geo = events.rdd.map(lambda x: x.geo_location)
-geolocation_index = joint_index(events_geo, pv_geo)
+geolocation_index = joint_index(events_geo, pv_geo, spark)
 
 logger.info('transforming events')
 events_transformed = replace_column_with_index(events, users_index, 'uuid')

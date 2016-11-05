@@ -2,21 +2,10 @@
 parquet in data/interim
 """
 import os
-from pyspark import SparkConf, SparkContext
-from pyspark.sql import SQLContext, SparkSession
+from weremeerkat.spark_utils import get_spark_things
+from weremeerkat.utils import project_dir
 
-
-conf = (SparkConf()
-        .setMaster("local[4]")
-        .setAppName("meerkat junior")
-        .set("spark.driver.memory", "5g"))
-
-sc = SparkContext(conf=conf)
-spark = SparkSession(sc)
-sqlContext = SQLContext(sc)
-
-project_dir = os.path.realpath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+sc, spark, sqlContext = get_spark_things()
 
 tables = [
     'documents_meta',
