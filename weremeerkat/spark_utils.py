@@ -133,6 +133,26 @@ def df_from_csv(input_path, sc, sqlContext):
     return df
 
 
+def indexify_column(df, column, spark):
+    index_rdd = df.select(column)\
+        .withColumnRenamed(column, 'original')\
+        .rdd\
+        .map(lambda x: x.original)\
+        .zipWithIndex()\
+        .map(lambda (val, i): Row(value=val, index=i))
+
+    schema = pst.StructType([pst.StructField('value', pst.StringType()),
+                             pst.StructField('index', pst.IntegerType())])
+
+
+    index_df = spark.createDataFrame(index_rdd, schema=schema)
+    df = df.withColumnRenamed(column, 'original')
+    return df \
+        .join(index_df, df.original == index_df.value)\
+        .withColumnRenamed('index', column)\
+        .drop('original')
+
+
 def joint_index(a, b, spark):
     """takes two rdds of values
     a = ['w', 'x', 'y']
