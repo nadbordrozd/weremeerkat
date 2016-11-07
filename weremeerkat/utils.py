@@ -7,6 +7,8 @@ load_dotenv(find_dotenv())
 project_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir))
 raw_data_dir = os.path.join(project_dir, 'data/raw/')
 interim_data_dir = os.path.join(project_dir, 'data/interim/')
+ffm_trainsets_dir = os.path.join(project_dir, 'data/interim/features')
+ffm_models_dir = os.path.join(project_dir, 'models/ffm')
 
 #MEMOIZATION
 CACHE_DIR = os.path.join(project_dir, 'data/interim/cache')
@@ -23,5 +25,8 @@ def get_func_name(func):
 log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO, format=log_fmt)
 
-logger = logging.getLogger(__name__)
-logger.info('================START=================')
+
+def get_logger():
+    return logging.getLogger(__name__)
+
+

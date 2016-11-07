@@ -1,6 +1,8 @@
 import os
-from weremeerkat.utils import interim_data_dir, logger
+from weremeerkat.utils import interim_data_dir, get_logger
 from weremeerkat.spark_utils import get_spark_things
+
+logger = get_logger()
 
 events_path = os.path.join(interim_data_dir, 'events_1.parquet')
 train_path = os.path.join(interim_data_dir, 'clicks_my_train.parquet')

@@ -1,6 +1,6 @@
 #run with in spark-submit
 import os
-from weremeerkat.utils import interim_data_dir, logger
+from weremeerkat.utils import interim_data_dir, get_logger
 from weremeerkat.spark_utils import get_spark_things
 
 clicks_path = os.path.join(interim_data_dir, 'clicks_train.parquet')
@@ -10,6 +10,7 @@ test_fraction = 0.2
 
 sc, spark, sqlContext = get_spark_things()
 
+logger = get_logger()
 logger.info('loading clicks')
 clicks = spark.read.parquet(clicks_path)
 logger.info('counting display_ids')

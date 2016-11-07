@@ -7,7 +7,9 @@ import pandas as pd
 from ml_metrics import mapk
 
 from weremeerkat.models.feature_engineering import get_train_set, get_test_set
-from weremeerkat.utils import logger, project_dir
+from weremeerkat.utils import get_logger, project_dir
+
+logger = get_logger()
 
 
 def sort_ads(df, predictions):
