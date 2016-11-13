@@ -1,17 +1,13 @@
 import os
-from subprocess import call
-import pandas as pd
 from itertools import izip
+from subprocess import call
+
 import numpy as np
+import pandas as pd
 from ml_metrics import mapk
 
-from utils import logger, project_dir
-
-this_dir = os.getcwd()
-
-train = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_train.csv"))
-test = pd.read_csv(os.path.join(this_dir, "../../data/raw/clicks_test.csv"))
-sample_sub = pd.read_csv(os.path.join(this_dir, "../../data/raw/sample_submission.csv"))
+from weremeerkat.models.feature_engineering import get_train_set, get_test_set
+from weremeerkat.utils import logger, project_dir
 
 
 def sort_ads(df, predictions):
@@ -62,6 +58,8 @@ def get_submission_path(filename):
 
 
 def make_submission(model, filename, actually_submit=False, message='"no message"'):
+    train = get_test_set()
+    test = get_train_set()
     logger.info('training %s on full training set' % model)
     model.fit(train, train.clicked)
     logger.info('done training. making final predictions')
@@ -85,6 +83,7 @@ def submit_submission(filename, message='"no message"'):
 
 
 def benchmark(model):
+    train = get_train_set()
     np.random.seed(0)
     logger.info('making train-test split')
     ids = train.display_id.unique()
@@ -102,7 +101,7 @@ def benchmark(model):
     logger.info('sorting ads according to predicted probability')
     ads_sorted = sort_ads(val_set, preds)
 
-    y = val_set[val_set.clicked==1].ad_id.values
+    y = val_set[val_set.clicked == 1].ad_id.values
     y = [[_] for _ in y]
     result = mapk(y, list(ads_sorted.ad_id), k=12)
 

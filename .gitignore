@@ -1,0 +1,8 @@
+*.csv
+*.zip
+*.db
+*.pyc
+*.env
+*.parquet
+.env/
+./.idea/
