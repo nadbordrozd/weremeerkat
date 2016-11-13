@@ -39,7 +39,30 @@ To instead save everything as spark friendly parquet files do:
 spark-submit weremeerkat/data/make_parquet.py
 ```
 
-You must have spark installed and available on path. 
+You must have spark installed and available on path. Then make train/test split by running
+```bash
+spark-submit --driver-memory 25g weremeerkat/data/train_test_split.py
+```
+
+Next to create training set for libffm, run:
+```bash
+spark-submit --driver-memory 25g weremeerkat/data/features/build_features.py
+```
+This will create a bunch of files in `data/interim/features/basic` - full train set, test set, and train set split 80-20 for cross validation. The idea is that each new set of features `new_features` will create files in `data/interim/features/new_features` and the downstream processing can be the same.
+
+Next run libffm:
+```bash
+python weremeerkat/models/run_benchmark.py basic
+```
+
+This will train the model and save it in `models/basic` and make predictions in `data/processed/basic`. The `basic` argument refers to the training set created with the previous command. Next, evaluate the results and make submission file by running:
+ 
+```bash
+python weremeerkat/models/run_benchmark.py basic
+```
+
+Submission file and a file with evaluation metrics will appear in `data/processed/basic`
+ 
 
 Project Organization
 ------------

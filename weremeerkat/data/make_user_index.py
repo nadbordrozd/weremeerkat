@@ -1,9 +1,10 @@
 import os
 
-from weremeerkat.spark_utils import joint_index, replace_column_with_index
-from weremeerkat.utils import logger, project_dir
+from weremeerkat.spark_utils import fast_joint_index, replace_column_with_index
+from weremeerkat.utils import get_logger, project_dir
 from weremeerkat.spark_utils import get_spark_things
 
+logger = get_logger()
 sc, spark, sqlContext = get_spark_things()
 
 logger.info('loading page_views')
@@ -16,12 +17,12 @@ events = spark.read.parquet(os.path.join(project_dir, 'data/interim/events.parqu
 logger.info('creating users index')
 pv_users = page_views.rdd.map(lambda x: x.uuid)
 events_users = events.rdd.map(lambda x: x.uuid)
-users_index = joint_index(events_users, pv_users, spark)
+users_index = fast_joint_index(events_users, pv_users, spark)
 
 logger.info('crating geo location index')
 pv_geo = page_views.rdd.map(lambda x: x.geo_location)
 events_geo = events.rdd.map(lambda x: x.geo_location)
-geolocation_index = joint_index(events_geo, pv_geo, spark)
+geolocation_index = fast_joint_index(events_geo, pv_geo, spark)
 
 logger.info('transforming events')
 events_transformed = replace_column_with_index(events, users_index, 'uuid')

@@ -138,18 +138,19 @@ def indexify_column(df, column, spark):
         .withColumnRenamed(column, 'original')\
         .rdd\
         .map(lambda x: x.original)\
+        .distinct()\
         .zipWithIndex()\
-        .map(lambda (val, i): Row(value=val, index=i))
+        .map(lambda (val, i): Row(value=val, _index=i))
 
     schema = pst.StructType([pst.StructField('value', pst.StringType()),
-                             pst.StructField('index', pst.IntegerType())])
+                             pst.StructField('_index', pst.IntegerType())])
 
 
     index_df = spark.createDataFrame(index_rdd, schema=schema)
-    df = df.withColumnRenamed(column, 'original')
-    return df \
-        .join(index_df, df.original == index_df.value)\
-        .withColumnRenamed('index', column)\
+    ndf = df.withColumnRenamed(column, 'original')
+    return ndf \
+        .join(index_df, ndf.original == index_df.value)\
+        .withColumnRenamed('_index', column)\
         .drop('original')
 
 
@@ -178,13 +179,34 @@ def joint_index(a, b, spark):
     count = a.count()
     a_index = a.zipWithIndex()
     b_minus_a_index = b_minus_a.zipWithIndex().map(lambda (v, i): (v, i + count))
-    result = a_index.union(b_minus_a_index).map(lambda (v, i): pst.Row(value=v, index=i))
+    result = a_index.union(b_minus_a_index).map(lambda (v, i): pst.Row(value=v, _index=i))
     schema = pst.StructType([pst.StructField('value', pst.StringType()),
-                             pst.StructField('index', pst.IntegerType())])
+                             pst.StructField('_index', pst.IntegerType())])
     result_df = spark.createDataFrame(result, schema=schema).cache()
     a.unpersist()
     b.unpersist()
     return result_df
+
+
+def fast_joint_index(a, b, spark):
+    """same as joint_index but doesn't guarantee that indices from a come before b
+
+    :param a: rdd of strings
+    :param b: rdd of strings
+    :param b: pyspark.sql.session.SparkSession
+    :return: rdd of pairs (value, integer index)
+    """
+    result = a\
+        .union(b)\
+        .distinct()\
+        .zipWithIndex()\
+        .map(lambda (v, i): pst.Row(value=v, _index=i))
+
+    schema = pst.StructType([pst.StructField('value', pst.StringType()),
+                             pst.StructField('_index', pst.IntegerType())])
+    result_df = spark.createDataFrame(result, schema=schema).cache()
+    return result_df
+
 
 def replace_column_with_index(df, index, column):
     """joins given dataframe with index on a given column and replaces the column with
@@ -200,4 +222,4 @@ def replace_column_with_index(df, index, column):
     return df.join(index, df.temp_name == index.value) \
         .drop('value') \
         .drop(temp_name) \
-        .withColumnRenamed('index', column)
+        .withColumnRenamed('_index', column)

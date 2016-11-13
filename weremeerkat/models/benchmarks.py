@@ -1,7 +1,7 @@
 import os
 from itertools import izip
 from subprocess import call
-
+from sklearn.metrics import roc_auc_score
 import numpy as np
 import pandas as pd
 from ml_metrics import mapk
@@ -55,8 +55,32 @@ def sort_ads(df, predictions):
     return pd.DataFrame({'display_id': disps, 'ad_id': ads})
 
 
+def evaluate_predictions(cv_with_predictions):
+    return roc_auc_score(y_score=cv_with_predictions.prediction,
+                         y_true=cv_with_predictions.clicked)
+
+
+def evaluate_ranking(df_cv, ads_sorted):
+    y = df_cv[df_cv.clicked == 1].ad_id.values
+    y = [[_] for _ in y]
+    return mapk(y, list(ads_sorted.ad_id), k=12)
+
+
 def get_submission_path(filename):
     return os.path.join(project_dir, 'data/processed', filename)
+
+
+def read_predictions(predictions_path, test_set_csv):
+    test_set = pd.read_csv(test_set_csv)
+    with open(predictions_path, 'rb') as lines:
+        predictions = np.array([float(line.strip()) for line in lines])
+    test_set['prediction'] = predictions
+    return test_set
+
+
+def make_submission_file(df, output_path):
+    df['ad_id'] = df.ad_id.map(lambda x: ' '.join(map(str, x)))
+    df.get(['display_id', 'ad_id']).to_csv(output_path, index=False)
 
 
 def make_submission(model, filename, actually_submit=False, message='"no message"'):

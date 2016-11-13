@@ -1,24 +1,26 @@
 #run with in spark-submit
-import os
-from weremeerkat.utils import interim_data_dir, get_logger
+import pandas as pd
+import weremeerkat.utils as utils
 from weremeerkat.spark_utils import get_spark_things
 
-clicks_path = os.path.join(interim_data_dir, 'clicks_train.parquet')
-train_path = os.path.join(interim_data_dir, 'clicks_my_train.parquet')
-cv_path = os.path.join(interim_data_dir, 'clicks_cv.parquet')
 test_fraction = 0.2
 
 sc, spark, sqlContext = get_spark_things()
 
-logger = get_logger()
+logger = utils.get_logger()
 logger.info('loading clicks')
-clicks = spark.read.parquet(clicks_path)
+clicks = spark.read.parquet(utils.clicks_full_train_parquet)
 logger.info('counting display_ids')
 display_count = clicks.selectExpr('max(display_id) as giraffe').collect()[0].giraffe
 logger.info('found %s display_ids' % display_count)
 train_count = int((1 - test_fraction) * display_count)
 
 logger.info('saving training set')
-clicks.filter('display_id < %s' % train_count).write.save(train_path)
+clicks_my_train = clicks.filter('display_id < %s' % train_count).cache()
+clicks_my_train.write.save(utils.clicks_my_train_parquet)
 logger.info('saving cross validation set')
-clicks.filter('display_id >= %s' % train_count).write.save(cv_path)
+clicks.filter('display_id >= %s' % train_count).write.save(utils.clicks_cv_parquet)
+
+clicks_train = pd.read_csv(utils.full_train_csv_path)
+clicks_train[clicks_train.display_id < train_count].to_csv(utils.my_train_csv_path, index=False)
+clicks_train[clicks_train.display_id >= train_count].to_csv(utils.cv_csv_path, index=False)
